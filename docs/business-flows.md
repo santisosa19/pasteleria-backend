@@ -28,6 +28,16 @@
 6. Se congela `unit_cost_estimate` y `profit_estimate` en cada item.
 7. Se registra auditoria.
 
+## Cancelacion De Venta
+
+1. Una venta confirmada no se edita ni se borra.
+2. Si fue cargada mal, el usuario ejecuta una cancelacion/reversa.
+3. El sistema marca `sale.status` como `CANCELLED`.
+4. Se crean movimientos `ADJUSTMENT_IN` vinculados a la venta para devolver stock.
+5. Los items, importes y costos historicos de la venta quedan intactos.
+6. Si corresponde, el usuario registra una nueva venta correcta.
+7. En una integracion fiscal futura, este flujo puede mapearse a una nota de credito.
+
 ## Ajuste De Stock
 
 1. El usuario elige insumo, tipo de ajuste, cantidad y motivo.
@@ -43,6 +53,23 @@
 3. Mercado Pago confirma el pago por webhook.
 4. El backend actualiza `payment` y pasa el pedido a `CONFIRMED`.
 5. Al producir o entregar se genera la venta y el descuento definitivo de stock.
+
+## Pedido Interno A Venta
+
+1. El usuario crea un pedido con productos, cantidades y cliente opcional.
+2. El pedido no descuenta stock al crearse.
+3. El usuario confirma o avanza el estado del pedido.
+4. Al convertir el pedido en venta, el sistema valida recetas, insumos y stock.
+5. Se crea `sale` vinculada a `order_id`.
+6. Se crean `sale_items`, movimientos `SALE_OUT` y se descuenta stock.
+7. El pedido pasa a `DELIVERED` y queda trazado con su venta.
+
+## Pagos Manuales
+
+1. El usuario puede registrar pagos manuales/ficticios asociados a pedidos.
+2. El proveedor por defecto es `manual`.
+3. El sistema evita sobrepagar un pedido.
+4. Los campos `provider`, `provider_payment_id` y `raw_payload` dejan la base lista para Mercado Pago.
 
 ## Regla Importante De Stock
 

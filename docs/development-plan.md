@@ -57,6 +57,22 @@
 - Webhooks de pago.
 - Estados de pedido.
 
+## Estado Actual Backend
+
+- Base tecnica completa.
+- Maestros principales implementados.
+- Recetas, productos, compras, inventario, ventas, reportes, clientes, pedidos y pagos implementados.
+- Conversion de pedido a venta implementada.
+- Cancelacion de venta con reversa de stock implementada.
+- Auditoria de operaciones criticas implementada.
+- Errores de API en espanol.
+
+## Pendiente Antes Del Frontend
+
+- Tests unitarios/integracion para flujos criticos.
+- Documentar ejemplos de payload por endpoint.
+- Revisar si `catalog` se deja para ecommerce o se agrega como lectura simple de productos publicados.
+
 ## Primeros Endpoints Recomendados
 
 - `POST /auth/login`
@@ -69,3 +85,5 @@
 - `POST /purchases`
 - `GET /inventory/movements`
 - `POST /sales`
+- `POST /orders/:id/convert-to-sale`
+- `POST /sales/:id/cancel`
