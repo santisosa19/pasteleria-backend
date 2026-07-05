@@ -1,5 +1,9 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { SaleStatus, StockMovementType } from '@prisma/client';
+import {
+  SaleStatus,
+  StockMovementSourceType,
+  StockMovementType,
+} from '@prisma/client';
 import { PrismaService } from '../database/prisma.service';
 import { ReportPeriodQueryDto } from './dto/report-period-query.dto';
 
@@ -161,6 +165,10 @@ export class ReportsService {
 
   async getRawMaterialConsumption(query: ReportPeriodQueryDto) {
     const range = this.getDateRange(query);
+    const cancelledSaleIds = await this.prisma.sale.findMany({
+      select: { id: true },
+      where: { status: SaleStatus.CANCELLED },
+    });
     const movements = await this.prisma.stockMovement.findMany({
       include: {
         rawMaterial: {
@@ -171,6 +179,10 @@ export class ReportsService {
       },
       where: {
         type: StockMovementType.SALE_OUT,
+        sourceType: StockMovementSourceType.SALE,
+        sourceId: cancelledSaleIds.length
+          ? { notIn: cancelledSaleIds.map((sale) => sale.id) }
+          : undefined,
         createdAt: this.toDateFilter(range),
       },
     });

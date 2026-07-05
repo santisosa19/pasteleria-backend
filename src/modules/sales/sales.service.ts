@@ -8,9 +8,11 @@ import {
   Prisma,
   StockMovementSourceType,
   StockMovementType,
+  SaleStatus,
 } from '@prisma/client';
 import { AuthenticatedUser } from '../../common/types/authenticated-user';
 import { PrismaService } from '../database/prisma.service';
+import { CancelSaleDto } from './dto/cancel-sale.dto';
 import { CreateSaleDto } from './dto/create-sale.dto';
 import { SaleItemDto } from './dto/sale-item.dto';
 
@@ -127,6 +129,45 @@ export class SalesService {
     }
 
     return sale;
+  }
+
+  async cancel(id: string, dto: CancelSaleDto, user: AuthenticatedUser) {
+    const sale = await this.findOne(id);
+
+    if (sale.status === SaleStatus.CANCELLED) {
+      throw new ConflictException('La venta ya esta cancelada');
+    }
+
+    const stockMovements = await this.prisma.stockMovement.findMany({
+      where: {
+        sourceId: id,
+        sourceType: StockMovementSourceType.SALE,
+        type: StockMovementType.SALE_OUT,
+      },
+    });
+
+    return this.prisma.$transaction(
+      async (tx) => {
+        for (const movement of stockMovements) {
+          await this.applyStockReturn(
+            tx,
+            sale.id,
+            movement.rawMaterialId,
+            Number(movement.quantityBase),
+            movement.unitCostSnapshot,
+            user.id,
+            dto.reason,
+          );
+        }
+
+        return tx.sale.update({
+          data: { status: SaleStatus.CANCELLED },
+          include: saleInclude,
+          where: { id },
+        });
+      },
+      { isolationLevel: Prisma.TransactionIsolationLevel.Serializable },
+    );
   }
 
   private async calculateSale(items: SaleItemDto[]) {
@@ -257,6 +298,54 @@ export class SalesService {
         createdById: userId,
       },
     });
+  }
+
+  private async applyStockReturn(
+    tx: Prisma.TransactionClient,
+    saleId: string,
+    rawMaterialId: string,
+    quantityBase: number,
+    unitCostSnapshot: Prisma.Decimal | null,
+    userId: string,
+    reason?: string,
+  ) {
+    const rawMaterial = await tx.rawMaterial.findUnique({
+      where: { id: rawMaterialId },
+    });
+
+    if (!rawMaterial) {
+      throw new NotFoundException('Materia prima no encontrada');
+    }
+
+    await tx.rawMaterial.update({
+      data: {
+        currentStock: Number(rawMaterial.currentStock) + quantityBase,
+      },
+      where: { id: rawMaterialId },
+    });
+
+    await tx.stockMovement.create({
+      data: {
+        rawMaterialId,
+        type: StockMovementType.ADJUSTMENT_IN,
+        quantityBase,
+        unitCostSnapshot,
+        sourceType: StockMovementSourceType.SALE,
+        sourceId: saleId,
+        note: this.buildCancellationNote(reason),
+        createdById: userId,
+      },
+    });
+  }
+
+  private buildCancellationNote(reason?: string) {
+    const trimmedReason = reason?.trim();
+
+    if (!trimmedReason) {
+      return 'Reversa de stock por cancelacion de venta';
+    }
+
+    return `Reversa de stock por cancelacion de venta: ${trimmedReason}`;
   }
 
   private ensureUniqueProducts(items: SaleItemDto[]) {

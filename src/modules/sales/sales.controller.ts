@@ -5,6 +5,7 @@ import { RequirePermissions } from '../../common/decorators/require-permissions.
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { PermissionsGuard } from '../../common/guards/permissions.guard';
 import type { AuthenticatedUser } from '../../common/types/authenticated-user';
+import { CancelSaleDto } from './dto/cancel-sale.dto';
 import { CreateSaleDto } from './dto/create-sale.dto';
 import { SalesService } from './sales.service';
 
@@ -31,5 +32,15 @@ export class SalesController {
   @RequirePermissions('sales:manage')
   findOne(@Param('id') id: string) {
     return this.salesService.findOne(id);
+  }
+
+  @Post(':id/cancel')
+  @RequirePermissions('sales:manage')
+  cancel(
+    @Param('id') id: string,
+    @Body() dto: CancelSaleDto,
+    @CurrentUser() user: AuthenticatedUser,
+  ) {
+    return this.salesService.cancel(id, dto, user);
   }
 }
