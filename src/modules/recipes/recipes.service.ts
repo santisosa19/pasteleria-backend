@@ -4,7 +4,6 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import type { Prisma } from '@prisma/client';
 import { PrismaService } from '../database/prisma.service';
 import { CreateRecipeDto } from './dto/create-recipe.dto';
 import { RecipeIngredientDto } from './dto/recipe-ingredient.dto';
@@ -29,10 +28,6 @@ const recipeInclude = {
   },
 } as const;
 
-type RecipeWithDetails = Prisma.RecipeGetPayload<{
-  include: typeof recipeInclude;
-}>;
-
 @Injectable()
 export class RecipesService {
   constructor(private readonly prisma: PrismaService) {}
@@ -40,7 +35,10 @@ export class RecipesService {
   async create(dto: CreateRecipeDto) {
     const name = this.normalizeName(dto.name);
     await this.ensureNameIsAvailable(name);
-    await this.ensureMeasurementUnitExists(dto.yieldUnitId, 'Yield unit not found');
+    await this.ensureMeasurementUnitExists(
+      dto.yieldUnitId,
+      'Yield unit not found',
+    );
     await this.validateIngredients(dto.ingredients);
 
     return this.prisma.recipe.create({
@@ -87,7 +85,8 @@ export class RecipesService {
     const recipe = await this.findOne(id);
     const ingredientCosts = recipe.ingredients.map((ingredient) => {
       const quantityBase =
-        Number(ingredient.quantity) * Number(ingredient.unit.conversionRateToBase);
+        Number(ingredient.quantity) *
+        Number(ingredient.unit.conversionRateToBase);
       const unitBaseCost = Number(ingredient.rawMaterial.averageCost);
       const totalCost = quantityBase * unitBaseCost;
 
@@ -127,7 +126,10 @@ export class RecipesService {
     }
 
     if (dto.yieldUnitId) {
-      await this.ensureMeasurementUnitExists(dto.yieldUnitId, 'Yield unit not found');
+      await this.ensureMeasurementUnitExists(
+        dto.yieldUnitId,
+        'Yield unit not found',
+      );
     }
 
     if (dto.ingredients) {

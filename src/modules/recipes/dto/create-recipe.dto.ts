@@ -37,7 +37,9 @@ export class CreateRecipeDto {
   @IsUUID()
   yieldUnitId: string;
 
-  @ApiPropertyOptional({ example: 'Mezclar secos, incorporar huevos y hornear.' })
+  @ApiPropertyOptional({
+    example: 'Mezclar secos, incorporar huevos y hornear.',
+  })
   @IsOptional()
   @IsString()
   instructions?: string;

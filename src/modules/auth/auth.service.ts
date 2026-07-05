@@ -114,9 +114,7 @@ export class AuthService {
       { sub: userId, username },
       {
         expiresIn: this.getAccessTokenExpiresIn(),
-        secret:
-          this.config.get<string>('JWT_ACCESS_SECRET') ??
-          'change-me-access-secret',
+        secret: this.config.getOrThrow<string>('JWT_ACCESS_SECRET'),
       },
     );
     const refreshToken = randomBytes(64).toString('hex');

@@ -20,12 +20,14 @@ import { RolesModule } from './modules/roles/roles.module';
 import { SalesModule } from './modules/sales/sales.module';
 import { SuppliersModule } from './modules/suppliers/suppliers.module';
 import { UsersModule } from './modules/users/users.module';
+import { validateEnv } from './config/env.validation';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       envFilePath: ['.env.local', '.env'],
       isGlobal: true,
+      validate: validateEnv,
     }),
     DatabaseModule,
     AuthModule,
