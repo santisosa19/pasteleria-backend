@@ -30,16 +30,22 @@ async function bootstrap() {
     }),
   );
 
-  const swaggerConfig = new DocumentBuilder()
-    .setTitle('Pasteleria Gestion API')
-    .setDescription(
-      'Backend para gestion interna, stock, ventas y ecommerce futuro.',
-    )
-    .setVersion('0.1.0')
-    .addBearerAuth()
-    .build();
-  const document = SwaggerModule.createDocument(app, swaggerConfig);
-  SwaggerModule.setup('docs', app, document);
+  const swaggerEnabled =
+    config.get<string>('NODE_ENV') !== 'production' ||
+    config.get<string>('SWAGGER_ENABLED') === 'true';
+
+  if (swaggerEnabled) {
+    const swaggerConfig = new DocumentBuilder()
+      .setTitle('Pasteleria Gestion API')
+      .setDescription(
+        'Backend para gestion interna, stock, ventas y ecommerce futuro.',
+      )
+      .setVersion('0.1.0')
+      .addBearerAuth()
+      .build();
+    const document = SwaggerModule.createDocument(app, swaggerConfig);
+    SwaggerModule.setup('docs', app, document);
+  }
 
   await app.listen({
     host: '0.0.0.0',
