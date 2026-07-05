@@ -214,7 +214,9 @@ export class ReportsService {
     const to = query.to ? new Date(query.to) : undefined;
 
     if (from && to && from > to) {
-      throw new BadRequestException('from must be before to');
+      throw new BadRequestException(
+        'La fecha inicial debe ser anterior a la fecha final',
+      );
     }
 
     return { from, to };

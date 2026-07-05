@@ -47,7 +47,7 @@ export class CustomersService {
     });
 
     if (!customer) {
-      throw new NotFoundException('Customer not found');
+      throw new NotFoundException('Cliente no encontrado');
     }
 
     return customer;
@@ -81,7 +81,7 @@ export class CustomersService {
         error instanceof Prisma.PrismaClientKnownRequestError &&
         error.code === 'P2003'
       ) {
-        throw new ConflictException('Customer is already in use');
+        throw new ConflictException('El cliente ya esta en uso');
       }
 
       throw error;

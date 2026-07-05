@@ -36,7 +36,7 @@ export class AuthService {
     });
 
     if (!user?.isActive) {
-      throw new UnauthorizedException('Invalid credentials');
+      throw new UnauthorizedException('Credenciales invalidas');
     }
 
     const passwordMatches = await bcrypt.compare(
@@ -45,7 +45,7 @@ export class AuthService {
     );
 
     if (!passwordMatches) {
-      throw new UnauthorizedException('Invalid credentials');
+      throw new UnauthorizedException('Credenciales invalidas');
     }
 
     const authenticatedUser = this.toAuthenticatedUser(user);
@@ -77,7 +77,7 @@ export class AuthService {
       storedToken.expiresAt <= new Date() ||
       !storedToken.user.isActive
     ) {
-      throw new UnauthorizedException('Invalid refresh token');
+      throw new UnauthorizedException('Token de actualizacion invalido');
     }
 
     await this.prisma.refreshToken.update({

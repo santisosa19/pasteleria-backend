@@ -50,7 +50,7 @@ export class RawMaterialsService {
     });
 
     if (!rawMaterial) {
-      throw new NotFoundException('Raw material not found');
+      throw new NotFoundException('Materia prima no encontrada');
     }
 
     return rawMaterial;
@@ -99,7 +99,7 @@ export class RawMaterialsService {
     });
 
     if (existing && existing.id !== currentId) {
-      throw new ConflictException('Raw material name already exists');
+      throw new ConflictException('El nombre de materia prima ya existe');
     }
   }
 
@@ -109,11 +109,13 @@ export class RawMaterialsService {
     });
 
     if (!measurementUnit) {
-      throw new NotFoundException('Base measurement unit not found');
+      throw new NotFoundException('Unidad base no encontrada');
     }
 
     if (!measurementUnit.isBase) {
-      throw new BadRequestException('Raw materials must use a base unit');
+      throw new BadRequestException(
+        'Las materias primas deben usar una unidad base',
+      );
     }
   }
 

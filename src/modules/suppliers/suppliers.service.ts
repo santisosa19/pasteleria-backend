@@ -33,7 +33,7 @@ export class SuppliersService {
     });
 
     if (!supplier) {
-      throw new NotFoundException('Supplier not found');
+      throw new NotFoundException('Proveedor no encontrado');
     }
 
     return supplier;

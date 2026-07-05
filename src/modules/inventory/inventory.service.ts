@@ -34,7 +34,9 @@ export class InventoryService {
     const to = query.to ? new Date(query.to) : undefined;
 
     if (from && to && from > to) {
-      throw new BadRequestException('from must be before to');
+      throw new BadRequestException(
+        'La fecha inicial debe ser anterior a la fecha final',
+      );
     }
 
     return this.prisma.stockMovement.findMany({
@@ -63,7 +65,7 @@ export class InventoryService {
     const note = dto.note.trim();
 
     if (!note) {
-      throw new BadRequestException('Adjustment note is required');
+      throw new BadRequestException('La nota del ajuste es obligatoria');
     }
 
     const rawMaterial = await this.prisma.rawMaterial.findUnique({
@@ -74,11 +76,11 @@ export class InventoryService {
     });
 
     if (!rawMaterial) {
-      throw new NotFoundException('Raw material not found');
+      throw new NotFoundException('Materia prima no encontrada');
     }
 
     if (!rawMaterial.isActive) {
-      throw new BadRequestException('Raw material is inactive');
+      throw new BadRequestException('La materia prima esta inactiva');
     }
 
     const unit = await this.prisma.measurementUnit.findUnique({
@@ -86,12 +88,12 @@ export class InventoryService {
     });
 
     if (!unit) {
-      throw new NotFoundException('Adjustment unit not found');
+      throw new NotFoundException('Unidad de ajuste no encontrada');
     }
 
     if (unit.kind !== rawMaterial.baseUnit.kind) {
       throw new BadRequestException(
-        'Adjustment unit kind must match raw material base unit kind',
+        'El tipo de unidad del ajuste debe coincidir con la unidad base de la materia prima',
       );
     }
 
@@ -104,7 +106,7 @@ export class InventoryService {
     const nextStock = currentStock + stockDelta;
 
     if (nextStock < 0) {
-      throw new BadRequestException('Adjustment would leave negative stock');
+      throw new BadRequestException('El ajuste dejaria stock negativo');
     }
 
     return this.prisma.$transaction(async (tx) => {

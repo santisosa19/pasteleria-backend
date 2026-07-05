@@ -83,7 +83,7 @@ export class ProductsService {
     });
 
     if (!product) {
-      throw new NotFoundException('Product not found');
+      throw new NotFoundException('Producto no encontrado');
     }
 
     return product;
@@ -96,11 +96,11 @@ export class ProductsService {
     });
 
     if (!product) {
-      throw new NotFoundException('Product not found');
+      throw new NotFoundException('Producto no encontrado');
     }
 
     if (!product.recipe) {
-      throw new BadRequestException('Product has no recipe assigned');
+      throw new BadRequestException('El producto no tiene receta asignada');
     }
 
     const ingredientCosts = product.recipe.ingredients.map((ingredient) => {
@@ -195,7 +195,7 @@ export class ProductsService {
     });
 
     if (existing && existing.id !== currentId) {
-      throw new ConflictException('Product name already exists');
+      throw new ConflictException('El nombre de producto ya existe');
     }
   }
 
@@ -205,7 +205,7 @@ export class ProductsService {
     });
 
     if (existing && existing.id !== currentId) {
-      throw new ConflictException('Product SKU already exists');
+      throw new ConflictException('El SKU del producto ya existe');
     }
   }
 
@@ -215,11 +215,11 @@ export class ProductsService {
     });
 
     if (!recipe) {
-      throw new NotFoundException('Recipe not found');
+      throw new NotFoundException('Receta no encontrada');
     }
 
     if (!recipe.isActive) {
-      throw new BadRequestException('Recipe is inactive');
+      throw new BadRequestException('La receta esta inactiva');
     }
   }
 

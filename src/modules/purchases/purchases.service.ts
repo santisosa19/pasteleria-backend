@@ -103,7 +103,7 @@ export class PurchasesService {
     });
 
     if (!purchase) {
-      throw new NotFoundException('Purchase not found');
+      throw new NotFoundException('Compra no encontrada');
     }
 
     return purchase;
@@ -121,11 +121,11 @@ export class PurchasesService {
       });
 
       if (!rawMaterial) {
-        throw new NotFoundException('Raw material not found');
+        throw new NotFoundException('Materia prima no encontrada');
       }
 
       if (!rawMaterial.isActive) {
-        throw new BadRequestException('Raw material is inactive');
+        throw new BadRequestException('La materia prima esta inactiva');
       }
 
       const unit = await this.prisma.measurementUnit.findUnique({
@@ -133,12 +133,12 @@ export class PurchasesService {
       });
 
       if (!unit) {
-        throw new NotFoundException('Purchase item unit not found');
+        throw new NotFoundException('Unidad del item de compra no encontrada');
       }
 
       if (unit.kind !== rawMaterial.baseUnit.kind) {
         throw new BadRequestException(
-          'Purchase item unit kind must match raw material base unit kind',
+          'El tipo de unidad del item de compra debe coincidir con la unidad base de la materia prima',
         );
       }
 
@@ -171,7 +171,7 @@ export class PurchasesService {
     });
 
     if (!rawMaterial) {
-      throw new NotFoundException('Raw material not found');
+      throw new NotFoundException('Materia prima no encontrada');
     }
 
     const currentStock = Number(rawMaterial.currentStock);
@@ -201,7 +201,7 @@ export class PurchasesService {
         unitCostSnapshot: item.unitCostBase,
         sourceType: StockMovementSourceType.PURCHASE,
         sourceId: purchaseId,
-        note: 'Purchase stock entry',
+        note: 'Entrada de stock por compra',
         createdById: userId,
       },
     });
@@ -213,11 +213,11 @@ export class PurchasesService {
     });
 
     if (!supplier) {
-      throw new NotFoundException('Supplier not found');
+      throw new NotFoundException('Proveedor no encontrado');
     }
 
     if (!supplier.isActive) {
-      throw new BadRequestException('Supplier is inactive');
+      throw new BadRequestException('El proveedor esta inactivo');
     }
   }
 

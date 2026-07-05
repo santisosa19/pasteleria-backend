@@ -45,7 +45,7 @@ export class MeasurementUnitsService {
     });
 
     if (!measurementUnit) {
-      throw new NotFoundException('Measurement unit not found');
+      throw new NotFoundException('Unidad de medida no encontrada');
     }
 
     return measurementUnit;
@@ -89,7 +89,7 @@ export class MeasurementUnitsService {
         error instanceof Prisma.PrismaClientKnownRequestError &&
         error.code === 'P2003'
       ) {
-        throw new ConflictException('Measurement unit is already in use');
+        throw new ConflictException('La unidad de medida ya esta en uso');
       }
 
       throw error;
@@ -104,7 +104,7 @@ export class MeasurementUnitsService {
     });
 
     if (existing && existing.id !== currentId) {
-      throw new ConflictException('Measurement unit code already exists');
+      throw new ConflictException('El codigo de unidad de medida ya existe');
     }
   }
 
@@ -120,7 +120,7 @@ export class MeasurementUnitsService {
 
     if (conversionRateToBase !== 1) {
       throw new BadRequestException(
-        'Base measurement units must have conversionRateToBase equal to 1',
+        'Las unidades base deben tener conversionRateToBase igual a 1',
       );
     }
 
@@ -132,9 +132,7 @@ export class MeasurementUnitsService {
     });
 
     if (existingBase && existingBase.id !== currentId) {
-      throw new ConflictException(
-        `A base measurement unit already exists for ${kind}`,
-      );
+      throw new ConflictException(`Ya existe una unidad base para ${kind}`);
     }
   }
 

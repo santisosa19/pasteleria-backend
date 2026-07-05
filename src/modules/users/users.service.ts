@@ -62,7 +62,7 @@ export class UsersService {
     });
 
     if (!user) {
-      throw new NotFoundException('User not found');
+      throw new NotFoundException('Usuario no encontrado');
     }
 
     return user;
@@ -122,7 +122,7 @@ export class UsersService {
     });
 
     if (!role) {
-      throw new NotFoundException('Role not found');
+      throw new NotFoundException('Rol no encontrado');
     }
   }
 
@@ -145,7 +145,7 @@ export class UsersService {
     });
 
     if (existing && existing.id !== currentUserId) {
-      throw new ConflictException('Username or email already exists');
+      throw new ConflictException('El usuario o email ya existe');
     }
   }
 }

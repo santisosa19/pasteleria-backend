@@ -57,7 +57,9 @@ export class OrdersService {
     const discount = dto.discount ?? 0;
 
     if (discount > subtotal) {
-      throw new BadRequestException('Discount cannot be greater than subtotal');
+      throw new BadRequestException(
+        'El descuento no puede ser mayor al subtotal',
+      );
     }
 
     return this.prisma.order.create({
@@ -98,7 +100,7 @@ export class OrdersService {
     });
 
     if (!order) {
-      throw new NotFoundException('Order not found');
+      throw new NotFoundException('Pedido no encontrado');
     }
 
     return order;
@@ -113,7 +115,7 @@ export class OrdersService {
 
     if (!allowedStatusTransitions[order.status].includes(dto.status)) {
       throw new ConflictException(
-        `Cannot change order status from ${order.status} to ${dto.status}`,
+        `No se puede cambiar el estado del pedido de ${order.status} a ${dto.status}`,
       );
     }
 
@@ -135,15 +137,15 @@ export class OrdersService {
       });
 
       if (!product) {
-        throw new NotFoundException('Product not found');
+        throw new NotFoundException('Producto no encontrado');
       }
 
       if (!product.isActive) {
-        throw new BadRequestException('Product is inactive');
+        throw new BadRequestException('El producto esta inactivo');
       }
 
       if (channel === OrderChannel.ECOMMERCE && !product.isPublished) {
-        throw new BadRequestException('Product is not published');
+        throw new BadRequestException('El producto no esta publicado');
       }
 
       const unitPrice = item.unitPrice ?? Number(product.salePrice);
@@ -165,7 +167,7 @@ export class OrdersService {
     for (const item of items) {
       if (productIds.has(item.productId)) {
         throw new ConflictException(
-          'Order cannot contain the same product twice',
+          'El pedido no puede contener el mismo producto dos veces',
         );
       }
 
@@ -179,7 +181,7 @@ export class OrdersService {
     });
 
     if (!customer) {
-      throw new NotFoundException('Customer not found');
+      throw new NotFoundException('Cliente no encontrado');
     }
   }
 

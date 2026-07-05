@@ -61,7 +61,9 @@ export class SalesService {
     const discount = dto.discount ?? 0;
 
     if (discount > subtotal) {
-      throw new BadRequestException('Discount cannot be greater than subtotal');
+      throw new BadRequestException(
+        'El descuento no puede ser mayor al subtotal',
+      );
     }
 
     const totalCost = items.reduce(
@@ -121,7 +123,7 @@ export class SalesService {
     });
 
     if (!sale) {
-      throw new NotFoundException('Sale not found');
+      throw new NotFoundException('Venta no encontrada');
     }
 
     return sale;
@@ -149,19 +151,19 @@ export class SalesService {
       });
 
       if (!product) {
-        throw new NotFoundException('Product not found');
+        throw new NotFoundException('Producto no encontrado');
       }
 
       if (!product.isActive) {
-        throw new BadRequestException('Product is inactive');
+        throw new BadRequestException('El producto esta inactivo');
       }
 
       if (!product.recipe) {
-        throw new BadRequestException('Product has no recipe assigned');
+        throw new BadRequestException('El producto no tiene receta asignada');
       }
 
       if (!product.recipe.isActive) {
-        throw new BadRequestException('Product recipe is inactive');
+        throw new BadRequestException('La receta del producto esta inactiva');
       }
 
       const recipeYieldQuantity = Number(product.recipe.yieldQuantity);
@@ -171,7 +173,7 @@ export class SalesService {
       for (const ingredient of product.recipe.ingredients) {
         if (!ingredient.rawMaterial.isActive) {
           throw new BadRequestException(
-            'Recipe contains an inactive raw material',
+            'La receta contiene una materia prima inactiva',
           );
         }
 
@@ -226,7 +228,7 @@ export class SalesService {
     });
 
     if (!rawMaterial) {
-      throw new NotFoundException('Raw material not found');
+      throw new NotFoundException('Materia prima no encontrada');
     }
 
     const currentStock = Number(rawMaterial.currentStock);
@@ -234,7 +236,7 @@ export class SalesService {
 
     if (nextStock < 0) {
       throw new BadRequestException(
-        `Insufficient stock for raw material ${rawMaterial.name}`,
+        `Stock insuficiente para la materia prima ${rawMaterial.name}`,
       );
     }
 
@@ -251,7 +253,7 @@ export class SalesService {
         unitCostSnapshot: consumption.unitCostSnapshot,
         sourceType: StockMovementSourceType.SALE,
         sourceId: saleId,
-        note: 'Sale stock output',
+        note: 'Salida de stock por venta',
         createdById: userId,
       },
     });
@@ -263,7 +265,7 @@ export class SalesService {
     for (const item of items) {
       if (productIds.has(item.productId)) {
         throw new ConflictException(
-          'Sale cannot contain the same product twice',
+          'La venta no puede contener el mismo producto dos veces',
         );
       }
 

@@ -14,7 +14,7 @@ export function validateEnv(config: Record<string, unknown>) {
     const value = config[key];
 
     if (typeof value !== 'string' || value.trim().length === 0) {
-      throw new Error(`Missing required environment variable: ${key}`);
+      throw new Error(`Falta la variable de entorno requerida: ${key}`);
     }
   }
 
@@ -23,13 +23,13 @@ export function validateEnv(config: Record<string, unknown>) {
 
     if (value !== undefined && typeof value !== 'string') {
       throw new Error(
-        `Invalid ${key}. Expected a duration like 15m, 1h or 7d.`,
+        `${key} es invalida. Se esperaba una duracion como 15m, 1h o 7d.`,
       );
     }
 
     if (value !== undefined && !/^\d+[smhd]$/.test(value)) {
       throw new Error(
-        `Invalid ${key}. Expected a duration like 15m, 1h or 7d.`,
+        `${key} es invalida. Se esperaba una duracion como 15m, 1h o 7d.`,
       );
     }
   }

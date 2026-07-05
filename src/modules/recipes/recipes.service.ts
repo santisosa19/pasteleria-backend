@@ -37,7 +37,7 @@ export class RecipesService {
     await this.ensureNameIsAvailable(name);
     await this.ensureMeasurementUnitExists(
       dto.yieldUnitId,
-      'Yield unit not found',
+      'Unidad de rendimiento no encontrada',
     );
     await this.validateIngredients(dto.ingredients);
 
@@ -75,7 +75,7 @@ export class RecipesService {
     });
 
     if (!recipe) {
-      throw new NotFoundException('Recipe not found');
+      throw new NotFoundException('Receta no encontrada');
     }
 
     return recipe;
@@ -128,7 +128,7 @@ export class RecipesService {
     if (dto.yieldUnitId) {
       await this.ensureMeasurementUnitExists(
         dto.yieldUnitId,
-        'Yield unit not found',
+        'Unidad de rendimiento no encontrada',
       );
     }
 
@@ -183,7 +183,7 @@ export class RecipesService {
     });
 
     if (existing && existing.id !== currentId) {
-      throw new ConflictException('Recipe name already exists');
+      throw new ConflictException('El nombre de receta ya existe');
     }
   }
 
@@ -205,7 +205,7 @@ export class RecipesService {
     for (const ingredient of ingredients) {
       if (rawMaterialIds.has(ingredient.rawMaterialId)) {
         throw new ConflictException(
-          'Recipe cannot contain the same raw material more than once',
+          'La receta no puede contener la misma materia prima mas de una vez',
         );
       }
 
@@ -219,21 +219,21 @@ export class RecipesService {
       });
 
       if (!rawMaterial) {
-        throw new NotFoundException('Raw material not found');
+        throw new NotFoundException('Materia prima no encontrada');
       }
 
       if (!rawMaterial.isActive) {
-        throw new BadRequestException('Raw material is inactive');
+        throw new BadRequestException('La materia prima esta inactiva');
       }
 
       const unit = await this.ensureMeasurementUnitExists(
         ingredient.unitId,
-        'Ingredient unit not found',
+        'Unidad del ingrediente no encontrada',
       );
 
       if (unit.kind !== rawMaterial.baseUnit.kind) {
         throw new BadRequestException(
-          'Ingredient unit kind must match raw material base unit kind',
+          'El tipo de unidad del ingrediente debe coincidir con la unidad base de la materia prima',
         );
       }
     }
