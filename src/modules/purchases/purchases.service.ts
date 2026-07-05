@@ -82,6 +82,20 @@ export class PurchasesService {
         await this.applyStockEntry(tx, purchase.id, item, user.id);
       }
 
+      await tx.auditLog.create({
+        data: {
+          actorUserId: user.id,
+          action: 'purchases.create',
+          entityName: 'Purchase',
+          entityId: purchase.id,
+          metadata: {
+            itemsCount: items.length,
+            supplierId: dto.supplierId ?? null,
+            totalAmount,
+          },
+        },
+      });
+
       return tx.purchase.findUniqueOrThrow({
         include: purchaseInclude,
         where: { id: purchase.id },

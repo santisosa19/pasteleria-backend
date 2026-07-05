@@ -9,9 +9,11 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { RequirePermissions } from '../../common/decorators/require-permissions.decorator';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { PermissionsGuard } from '../../common/guards/permissions.guard';
+import type { AuthenticatedUser } from '../../common/types/authenticated-user';
 import { CreatePaymentDto } from './dto/create-payment.dto';
 import { PaymentQueryDto } from './dto/payment-query.dto';
 import { UpdatePaymentStatusDto } from './dto/update-payment-status.dto';
@@ -26,8 +28,11 @@ export class PaymentsController {
 
   @Post()
   @RequirePermissions('payments:manage')
-  create(@Body() dto: CreatePaymentDto) {
-    return this.paymentsService.create(dto);
+  create(
+    @Body() dto: CreatePaymentDto,
+    @CurrentUser() user: AuthenticatedUser,
+  ) {
+    return this.paymentsService.create(dto, user);
   }
 
   @Get()
@@ -44,7 +49,11 @@ export class PaymentsController {
 
   @Patch(':id/status')
   @RequirePermissions('payments:manage')
-  updateStatus(@Param('id') id: string, @Body() dto: UpdatePaymentStatusDto) {
-    return this.paymentsService.updateStatus(id, dto);
+  updateStatus(
+    @Param('id') id: string,
+    @Body() dto: UpdatePaymentStatusDto,
+    @CurrentUser() user: AuthenticatedUser,
+  ) {
+    return this.paymentsService.updateStatus(id, dto, user);
   }
 }

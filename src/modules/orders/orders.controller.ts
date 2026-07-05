@@ -26,8 +26,8 @@ export class OrdersController {
 
   @Post()
   @RequirePermissions('orders:manage')
-  create(@Body() dto: CreateOrderDto) {
-    return this.ordersService.create(dto);
+  create(@Body() dto: CreateOrderDto, @CurrentUser() user: AuthenticatedUser) {
+    return this.ordersService.create(dto, user);
   }
 
   @Get()
@@ -53,7 +53,11 @@ export class OrdersController {
 
   @Patch(':id/status')
   @RequirePermissions('orders:manage')
-  updateStatus(@Param('id') id: string, @Body() dto: UpdateOrderStatusDto) {
-    return this.ordersService.updateStatus(id, dto);
+  updateStatus(
+    @Param('id') id: string,
+    @Body() dto: UpdateOrderStatusDto,
+    @CurrentUser() user: AuthenticatedUser,
+  ) {
+    return this.ordersService.updateStatus(id, dto, user);
   }
 }

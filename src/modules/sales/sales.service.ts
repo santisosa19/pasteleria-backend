@@ -102,6 +102,20 @@ export class SalesService {
           await this.applyStockOutput(tx, sale.id, consumption, user.id);
         }
 
+        await tx.auditLog.create({
+          data: {
+            actorUserId: user.id,
+            action: 'sales.create',
+            entityName: 'Sale',
+            entityId: sale.id,
+            metadata: {
+              grossProfit,
+              itemsCount: items.length,
+              totalAmount,
+            },
+          },
+        });
+
         return tx.sale.findUniqueOrThrow({
           include: saleInclude,
           where: { id: sale.id },
@@ -160,11 +174,26 @@ export class SalesService {
           );
         }
 
-        return tx.sale.update({
+        const cancelledSale = await tx.sale.update({
           data: { status: SaleStatus.CANCELLED },
           include: saleInclude,
           where: { id },
         });
+
+        await tx.auditLog.create({
+          data: {
+            actorUserId: user.id,
+            action: 'sales.cancel',
+            entityName: 'Sale',
+            entityId: sale.id,
+            metadata: {
+              reason: dto.reason?.trim() || null,
+              reversedMovements: stockMovements.length,
+            },
+          },
+        });
+
+        return cancelledSale;
       },
       { isolationLevel: Prisma.TransactionIsolationLevel.Serializable },
     );

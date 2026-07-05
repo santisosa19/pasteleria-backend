@@ -5,6 +5,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { OrderStatus, PaymentStatus, Prisma } from '@prisma/client';
+import { AuthenticatedUser } from '../../common/types/authenticated-user';
 import { PrismaService } from '../database/prisma.service';
 import { CreatePaymentDto } from './dto/create-payment.dto';
 import { PaymentQueryDto } from './dto/payment-query.dto';
@@ -34,7 +35,7 @@ const allowedStatusTransitions: Record<PaymentStatus, PaymentStatus[]> = {
 export class PaymentsService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async create(dto: CreatePaymentDto) {
+  async create(dto: CreatePaymentDto, user: AuthenticatedUser) {
     const provider = this.normalizeProvider(dto.provider);
     const status = dto.status ?? PaymentStatus.APPROVED;
 
@@ -55,17 +56,38 @@ export class PaymentsService {
       await this.ensureOrderCanReceivePayment(dto.orderId, dto.amount);
     }
 
-    return this.prisma.payment.create({
-      data: {
-        orderId: dto.orderId,
-        provider,
-        providerPaymentId: this.cleanOptionalString(dto.providerPaymentId),
-        status,
-        amount: dto.amount,
-        paidAt: this.getPaidAt(status, dto.paidAt),
-        rawPayload: dto.rawPayload as Prisma.InputJsonValue | undefined,
-      },
-      include: paymentInclude,
+    return this.prisma.$transaction(async (tx) => {
+      const payment = await tx.payment.create({
+        data: {
+          orderId: dto.orderId,
+          provider,
+          providerPaymentId: this.cleanOptionalString(dto.providerPaymentId),
+          status,
+          amount: dto.amount,
+          paidAt: this.getPaidAt(status, dto.paidAt),
+          rawPayload: dto.rawPayload as Prisma.InputJsonValue | undefined,
+        },
+      });
+
+      await tx.auditLog.create({
+        data: {
+          actorUserId: user.id,
+          action: 'payments.create',
+          entityName: 'Payment',
+          entityId: payment.id,
+          metadata: {
+            amount: dto.amount,
+            orderId: dto.orderId ?? null,
+            provider,
+            status,
+          },
+        },
+      });
+
+      return tx.payment.findUniqueOrThrow({
+        include: paymentInclude,
+        where: { id: payment.id },
+      });
     });
   }
 
@@ -96,7 +118,11 @@ export class PaymentsService {
     return payment;
   }
 
-  async updateStatus(id: string, dto: UpdatePaymentStatusDto) {
+  async updateStatus(
+    id: string,
+    dto: UpdatePaymentStatusDto,
+    user: AuthenticatedUser,
+  ) {
     const payment = await this.findOne(id);
 
     if (payment.status === dto.status) {
@@ -117,13 +143,30 @@ export class PaymentsService {
       );
     }
 
-    return this.prisma.payment.update({
-      data: {
-        status: dto.status,
-        paidAt: this.getPaidAt(dto.status, dto.paidAt),
-      },
-      include: paymentInclude,
-      where: { id },
+    return this.prisma.$transaction(async (tx) => {
+      const updatedPayment = await tx.payment.update({
+        data: {
+          status: dto.status,
+          paidAt: this.getPaidAt(dto.status, dto.paidAt),
+        },
+        include: paymentInclude,
+        where: { id },
+      });
+
+      await tx.auditLog.create({
+        data: {
+          actorUserId: user.id,
+          action: 'payments.status.update',
+          entityName: 'Payment',
+          entityId: id,
+          metadata: {
+            from: payment.status,
+            to: dto.status,
+          },
+        },
+      });
+
+      return updatedPayment;
     });
   }
 

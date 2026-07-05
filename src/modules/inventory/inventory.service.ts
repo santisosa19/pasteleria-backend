@@ -115,7 +115,7 @@ export class InventoryService {
         where: { id: dto.rawMaterialId },
       });
 
-      return tx.stockMovement.create({
+      const stockMovement = await tx.stockMovement.create({
         data: {
           rawMaterialId: dto.rawMaterialId,
           type: dto.type,
@@ -127,6 +127,23 @@ export class InventoryService {
         },
         include: stockMovementInclude,
       });
+
+      await tx.auditLog.create({
+        data: {
+          actorUserId: user.id,
+          action: 'inventory.adjustment.create',
+          entityName: 'StockMovement',
+          entityId: stockMovement.id,
+          metadata: {
+            nextStock,
+            quantityBase,
+            rawMaterialId: dto.rawMaterialId,
+            type: dto.type,
+          },
+        },
+      });
+
+      return stockMovement;
     });
   }
 

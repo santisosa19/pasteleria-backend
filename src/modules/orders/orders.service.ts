@@ -63,7 +63,7 @@ const allowedStatusTransitions: Record<OrderStatus, OrderStatus[]> = {
 export class OrdersService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async create(dto: CreateOrderDto) {
+  async create(dto: CreateOrderDto, user: AuthenticatedUser) {
     const channel = dto.channel ?? OrderChannel.INTERNAL;
 
     if (dto.customerId) {
@@ -80,27 +80,48 @@ export class OrdersService {
       );
     }
 
-    return this.prisma.order.create({
-      data: {
-        customerId: dto.customerId,
-        channel,
-        requestedDate: dto.requestedDate
-          ? new Date(dto.requestedDate)
-          : undefined,
-        subtotal,
-        discount,
-        totalAmount: subtotal - discount,
-        notes: this.cleanOptionalString(dto.notes),
-        items: {
-          create: items.map((item) => ({
-            productId: item.productId,
-            quantity: item.quantity,
-            unitPrice: item.unitPrice,
-            subtotal: item.subtotal,
-          })),
+    return this.prisma.$transaction(async (tx) => {
+      const order = await tx.order.create({
+        data: {
+          customerId: dto.customerId,
+          channel,
+          requestedDate: dto.requestedDate
+            ? new Date(dto.requestedDate)
+            : undefined,
+          subtotal,
+          discount,
+          totalAmount: subtotal - discount,
+          notes: this.cleanOptionalString(dto.notes),
+          items: {
+            create: items.map((item) => ({
+              productId: item.productId,
+              quantity: item.quantity,
+              unitPrice: item.unitPrice,
+              subtotal: item.subtotal,
+            })),
+          },
         },
-      },
-      include: orderInclude,
+      });
+
+      await tx.auditLog.create({
+        data: {
+          actorUserId: user.id,
+          action: 'orders.create',
+          entityName: 'Order',
+          entityId: order.id,
+          metadata: {
+            channel,
+            customerId: dto.customerId ?? null,
+            itemsCount: items.length,
+            totalAmount: subtotal - discount,
+          },
+        },
+      });
+
+      return tx.order.findUniqueOrThrow({
+        include: orderInclude,
+        where: { id: order.id },
+      });
     });
   }
 
@@ -124,7 +145,11 @@ export class OrdersService {
     return order;
   }
 
-  async updateStatus(id: string, dto: UpdateOrderStatusDto) {
+  async updateStatus(
+    id: string,
+    dto: UpdateOrderStatusDto,
+    user: AuthenticatedUser,
+  ) {
     const order = await this.findOne(id);
 
     if (order.status === dto.status) {
@@ -137,10 +162,27 @@ export class OrdersService {
       );
     }
 
-    return this.prisma.order.update({
-      data: { status: dto.status },
-      include: orderInclude,
-      where: { id },
+    return this.prisma.$transaction(async (tx) => {
+      const updatedOrder = await tx.order.update({
+        data: { status: dto.status },
+        include: orderInclude,
+        where: { id },
+      });
+
+      await tx.auditLog.create({
+        data: {
+          actorUserId: user.id,
+          action: 'orders.status.update',
+          entityName: 'Order',
+          entityId: id,
+          metadata: {
+            from: order.status,
+            to: dto.status,
+          },
+        },
+      });
+
+      return updatedOrder;
     });
   }
 
@@ -228,6 +270,19 @@ export class OrdersService {
         await tx.order.update({
           data: { status: OrderStatus.DELIVERED },
           where: { id: order.id },
+        });
+
+        await tx.auditLog.create({
+          data: {
+            actorUserId: user.id,
+            action: 'orders.convert_to_sale',
+            entityName: 'Order',
+            entityId: order.id,
+            metadata: {
+              saleId: sale.id,
+              totalAmount: Number(order.totalAmount),
+            },
+          },
         });
 
         return tx.sale.findUniqueOrThrow({
