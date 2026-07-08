@@ -19,7 +19,9 @@ async function bootstrap() {
   app.setGlobalPrefix('api/v1');
   await app.register(helmet);
   app.enableCors({
+    allowedHeaders: ['Authorization', 'Content-Type'],
     credentials: true,
+    methods: ['GET', 'HEAD', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     origin: config.get<string>('CORS_ORIGIN')?.split(',') ?? true,
   });
   app.useGlobalPipes(
