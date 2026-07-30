@@ -26,31 +26,31 @@ export class MeasurementUnitsController {
   ) {}
 
   @Post()
-  @RequirePermissions('measurement-units:manage')
+  @RequirePermissions('measurement-units:create')
   create(@Body() dto: CreateMeasurementUnitDto) {
     return this.measurementUnitsService.create(dto);
   }
 
   @Get()
-  @RequirePermissions('measurement-units:manage')
+  @RequirePermissions('measurement-units:read')
   findAll() {
     return this.measurementUnitsService.findAll();
   }
 
   @Get(':id')
-  @RequirePermissions('measurement-units:manage')
+  @RequirePermissions('measurement-units:read')
   findOne(@Param('id') id: string) {
     return this.measurementUnitsService.findOne(id);
   }
 
   @Patch(':id')
-  @RequirePermissions('measurement-units:manage')
+  @RequirePermissions('measurement-units:update')
   update(@Param('id') id: string, @Body() dto: UpdateMeasurementUnitDto) {
     return this.measurementUnitsService.update(id, dto);
   }
 
   @Delete(':id')
-  @RequirePermissions('measurement-units:manage')
+  @RequirePermissions('measurement-units:delete')
   remove(@Param('id') id: string) {
     return this.measurementUnitsService.remove(id);
   }

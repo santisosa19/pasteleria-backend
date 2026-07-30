@@ -14,25 +14,25 @@ export class ReportsController {
   constructor(private readonly reportsService: ReportsService) {}
 
   @Get('sales-summary')
-  @RequirePermissions('reports:read')
+  @RequirePermissions('reports:sales-summary:read')
   getSalesSummary(@Query() query: ReportPeriodQueryDto) {
     return this.reportsService.getSalesSummary(query);
   }
 
   @Get('product-margins')
-  @RequirePermissions('reports:read')
+  @RequirePermissions('reports:product-margins:read')
   getProductMargins(@Query() query: ReportPeriodQueryDto) {
     return this.reportsService.getProductMargins(query);
   }
 
   @Get('purchases-by-supplier')
-  @RequirePermissions('reports:read')
+  @RequirePermissions('reports:purchases-by-supplier:read')
   getPurchasesBySupplier(@Query() query: ReportPeriodQueryDto) {
     return this.reportsService.getPurchasesBySupplier(query);
   }
 
   @Get('raw-material-consumption')
-  @RequirePermissions('reports:read')
+  @RequirePermissions('reports:raw-material-consumption:read')
   getRawMaterialConsumption(@Query() query: ReportPeriodQueryDto) {
     return this.reportsService.getRawMaterialConsumption(query);
   }

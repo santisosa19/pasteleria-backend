@@ -17,19 +17,19 @@ export class InventoryController {
   constructor(private readonly inventoryService: InventoryService) {}
 
   @Get('movements')
-  @RequirePermissions('inventory:manage')
+  @RequirePermissions('inventory:movements:read')
   findMovements(@Query() query: StockMovementQueryDto) {
     return this.inventoryService.findMovements(query);
   }
 
   @Get('low-stock')
-  @RequirePermissions('inventory:manage')
+  @RequirePermissions('inventory:low-stock:read')
   findLowStock() {
     return this.inventoryService.findLowStock();
   }
 
   @Post('adjustments')
-  @RequirePermissions('inventory:manage')
+  @RequirePermissions('inventory:adjustments:create')
   createAdjustment(
     @Body() dto: CreateStockAdjustmentDto,
     @CurrentUser() user: AuthenticatedUser,

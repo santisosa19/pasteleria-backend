@@ -24,37 +24,37 @@ export class RecipesController {
   constructor(private readonly recipesService: RecipesService) {}
 
   @Post()
-  @RequirePermissions('recipes:manage')
+  @RequirePermissions('recipes:create')
   create(@Body() dto: CreateRecipeDto) {
     return this.recipesService.create(dto);
   }
 
   @Get()
-  @RequirePermissions('recipes:manage')
+  @RequirePermissions('recipes:read')
   findAll() {
     return this.recipesService.findAll();
   }
 
   @Get(':id/cost')
-  @RequirePermissions('recipes:manage')
+  @RequirePermissions('recipes:cost:read')
   getCost(@Param('id') id: string) {
     return this.recipesService.getCost(id);
   }
 
   @Get(':id')
-  @RequirePermissions('recipes:manage')
+  @RequirePermissions('recipes:read')
   findOne(@Param('id') id: string) {
     return this.recipesService.findOne(id);
   }
 
   @Patch(':id')
-  @RequirePermissions('recipes:manage')
+  @RequirePermissions('recipes:update')
   update(@Param('id') id: string, @Body() dto: UpdateRecipeDto) {
     return this.recipesService.update(id, dto);
   }
 
   @Delete(':id')
-  @RequirePermissions('recipes:manage')
+  @RequirePermissions('recipes:delete')
   remove(@Param('id') id: string) {
     return this.recipesService.remove(id);
   }

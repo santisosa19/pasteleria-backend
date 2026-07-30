@@ -24,31 +24,31 @@ export class CustomersController {
   constructor(private readonly customersService: CustomersService) {}
 
   @Post()
-  @RequirePermissions('customers:manage')
+  @RequirePermissions('customers:create')
   create(@Body() dto: CreateCustomerDto) {
     return this.customersService.create(dto);
   }
 
   @Get()
-  @RequirePermissions('customers:manage')
+  @RequirePermissions('customers:read')
   findAll() {
     return this.customersService.findAll();
   }
 
   @Get(':id')
-  @RequirePermissions('customers:manage')
+  @RequirePermissions('customers:read')
   findOne(@Param('id') id: string) {
     return this.customersService.findOne(id);
   }
 
   @Patch(':id')
-  @RequirePermissions('customers:manage')
+  @RequirePermissions('customers:update')
   update(@Param('id') id: string, @Body() dto: UpdateCustomerDto) {
     return this.customersService.update(id, dto);
   }
 
   @Delete(':id')
-  @RequirePermissions('customers:manage')
+  @RequirePermissions('customers:delete')
   remove(@Param('id') id: string) {
     return this.customersService.remove(id);
   }

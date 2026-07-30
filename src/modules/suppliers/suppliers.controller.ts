@@ -24,31 +24,31 @@ export class SuppliersController {
   constructor(private readonly suppliersService: SuppliersService) {}
 
   @Post()
-  @RequirePermissions('suppliers:manage')
+  @RequirePermissions('suppliers:create')
   create(@Body() dto: CreateSupplierDto) {
     return this.suppliersService.create(dto);
   }
 
   @Get()
-  @RequirePermissions('suppliers:manage')
+  @RequirePermissions('suppliers:read')
   findAll() {
     return this.suppliersService.findAll();
   }
 
   @Get(':id')
-  @RequirePermissions('suppliers:manage')
+  @RequirePermissions('suppliers:read')
   findOne(@Param('id') id: string) {
     return this.suppliersService.findOne(id);
   }
 
   @Patch(':id')
-  @RequirePermissions('suppliers:manage')
+  @RequirePermissions('suppliers:update')
   update(@Param('id') id: string, @Body() dto: UpdateSupplierDto) {
     return this.suppliersService.update(id, dto);
   }
 
   @Delete(':id')
-  @RequirePermissions('suppliers:manage')
+  @RequirePermissions('suppliers:delete')
   remove(@Param('id') id: string) {
     return this.suppliersService.remove(id);
   }

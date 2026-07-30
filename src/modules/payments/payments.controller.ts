@@ -27,7 +27,7 @@ export class PaymentsController {
   constructor(private readonly paymentsService: PaymentsService) {}
 
   @Post()
-  @RequirePermissions('payments:manage')
+  @RequirePermissions('payments:create')
   create(
     @Body() dto: CreatePaymentDto,
     @CurrentUser() user: AuthenticatedUser,
@@ -36,19 +36,19 @@ export class PaymentsController {
   }
 
   @Get()
-  @RequirePermissions('payments:manage')
+  @RequirePermissions('payments:read')
   findAll(@Query() query: PaymentQueryDto) {
     return this.paymentsService.findAll(query);
   }
 
   @Get(':id')
-  @RequirePermissions('payments:manage')
+  @RequirePermissions('payments:read')
   findOne(@Param('id') id: string) {
     return this.paymentsService.findOne(id);
   }
 
   @Patch(':id/status')
-  @RequirePermissions('payments:manage')
+  @RequirePermissions('payments:status:update')
   updateStatus(
     @Param('id') id: string,
     @Body() dto: UpdatePaymentStatusDto,

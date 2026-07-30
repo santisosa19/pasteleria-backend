@@ -24,37 +24,37 @@ export class ProductsController {
   constructor(private readonly productsService: ProductsService) {}
 
   @Post()
-  @RequirePermissions('products:manage')
+  @RequirePermissions('products:create')
   create(@Body() dto: CreateProductDto) {
     return this.productsService.create(dto);
   }
 
   @Get()
-  @RequirePermissions('products:manage')
+  @RequirePermissions('products:read')
   findAll() {
     return this.productsService.findAll();
   }
 
   @Get(':id/profit-estimate')
-  @RequirePermissions('products:manage')
+  @RequirePermissions('products:profit:read')
   getProfitEstimate(@Param('id') id: string) {
     return this.productsService.getProfitEstimate(id);
   }
 
   @Get(':id')
-  @RequirePermissions('products:manage')
+  @RequirePermissions('products:read')
   findOne(@Param('id') id: string) {
     return this.productsService.findOne(id);
   }
 
   @Patch(':id')
-  @RequirePermissions('products:manage')
+  @RequirePermissions('products:update')
   update(@Param('id') id: string, @Body() dto: UpdateProductDto) {
     return this.productsService.update(id, dto);
   }
 
   @Delete(':id')
-  @RequirePermissions('products:manage')
+  @RequirePermissions('products:delete')
   remove(@Param('id') id: string) {
     return this.productsService.remove(id);
   }

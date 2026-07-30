@@ -123,9 +123,13 @@ export class RawMaterialsService {
     return name.trim();
   }
 
-  private cleanOptionalString(value?: string) {
-    const trimmed = value?.trim();
+  private cleanOptionalString(value?: string | null) {
+    if (value === undefined) {
+      return undefined;
+    }
 
-    return trimmed || undefined;
+    const trimmed = value?.trim() ?? '';
+
+    return trimmed || null;
   }
 }

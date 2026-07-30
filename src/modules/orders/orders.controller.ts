@@ -25,25 +25,25 @@ export class OrdersController {
   constructor(private readonly ordersService: OrdersService) {}
 
   @Post()
-  @RequirePermissions('orders:manage')
+  @RequirePermissions('orders:create')
   create(@Body() dto: CreateOrderDto, @CurrentUser() user: AuthenticatedUser) {
     return this.ordersService.create(dto, user);
   }
 
   @Get()
-  @RequirePermissions('orders:manage')
+  @RequirePermissions('orders:read')
   findAll() {
     return this.ordersService.findAll();
   }
 
   @Get(':id')
-  @RequirePermissions('orders:manage')
+  @RequirePermissions('orders:read')
   findOne(@Param('id') id: string) {
     return this.ordersService.findOne(id);
   }
 
   @Post(':id/convert-to-sale')
-  @RequirePermissions('orders:manage')
+  @RequirePermissions('orders:convert-to-sale')
   convertToSale(
     @Param('id') id: string,
     @CurrentUser() user: AuthenticatedUser,
@@ -52,7 +52,7 @@ export class OrdersController {
   }
 
   @Patch(':id/status')
-  @RequirePermissions('orders:manage')
+  @RequirePermissions('orders:status:update')
   updateStatus(
     @Param('id') id: string,
     @Body() dto: UpdateOrderStatusDto,

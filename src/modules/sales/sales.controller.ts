@@ -17,25 +17,25 @@ export class SalesController {
   constructor(private readonly salesService: SalesService) {}
 
   @Post()
-  @RequirePermissions('sales:manage')
+  @RequirePermissions('sales:create')
   create(@Body() dto: CreateSaleDto, @CurrentUser() user: AuthenticatedUser) {
     return this.salesService.create(dto, user);
   }
 
   @Get()
-  @RequirePermissions('sales:manage')
+  @RequirePermissions('sales:read')
   findAll() {
     return this.salesService.findAll();
   }
 
   @Get(':id')
-  @RequirePermissions('sales:manage')
+  @RequirePermissions('sales:read')
   findOne(@Param('id') id: string) {
     return this.salesService.findOne(id);
   }
 
   @Post(':id/cancel')
-  @RequirePermissions('sales:manage')
+  @RequirePermissions('sales:cancel')
   cancel(
     @Param('id') id: string,
     @Body() dto: CancelSaleDto,

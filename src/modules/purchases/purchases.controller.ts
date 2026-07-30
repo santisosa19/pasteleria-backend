@@ -16,7 +16,7 @@ export class PurchasesController {
   constructor(private readonly purchasesService: PurchasesService) {}
 
   @Post()
-  @RequirePermissions('purchases:manage')
+  @RequirePermissions('purchases:create')
   create(
     @Body() dto: CreatePurchaseDto,
     @CurrentUser() user: AuthenticatedUser,
@@ -25,13 +25,13 @@ export class PurchasesController {
   }
 
   @Get()
-  @RequirePermissions('purchases:manage')
+  @RequirePermissions('purchases:read')
   findAll() {
     return this.purchasesService.findAll();
   }
 
   @Get(':id')
-  @RequirePermissions('purchases:manage')
+  @RequirePermissions('purchases:read')
   findOne(@Param('id') id: string) {
     return this.purchasesService.findOne(id);
   }
