@@ -167,11 +167,11 @@ export class RecipesService {
     });
   }
 
-  async remove(id: string) {
+  async setActive(id: string, isActive: boolean) {
     await this.findOne(id);
 
     return this.prisma.recipe.update({
-      data: { isActive: false },
+      data: { isActive },
       include: recipeInclude,
       where: { id },
     });

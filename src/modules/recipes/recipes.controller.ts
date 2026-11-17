@@ -53,9 +53,15 @@ export class RecipesController {
     return this.recipesService.update(id, dto);
   }
 
+  @Patch(':id/activate')
+  @RequirePermissions('recipes:delete')
+  activate(@Param('id') id: string) {
+    return this.recipesService.setActive(id, true);
+  }
+
   @Delete(':id')
   @RequirePermissions('recipes:delete')
   remove(@Param('id') id: string) {
-    return this.recipesService.remove(id);
+    return this.recipesService.setActive(id, false);
   }
 }
