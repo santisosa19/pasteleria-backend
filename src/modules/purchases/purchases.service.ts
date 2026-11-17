@@ -39,10 +39,10 @@ type CalculatedPurchaseItem = {
   rawMaterialId: string;
   quantity: number;
   unitId: string;
-  unitCost: number;
-  subtotal: number;
-  quantityBase: number;
-  unitCostBase: number;
+  unitCost: Prisma.Decimal;
+  subtotal: Prisma.Decimal;
+  quantityBase: Prisma.Decimal;
+  unitCostBase: Prisma.Decimal;
 };
 
 @Injectable()
@@ -55,7 +55,10 @@ export class PurchasesService {
     }
 
     const items = await this.calculateItems(dto.items);
-    const totalAmount = items.reduce((sum, item) => sum + item.subtotal, 0);
+    const totalAmount = items.reduce(
+      (sum, item) => sum.plus(item.subtotal),
+      new Prisma.Decimal(0),
+    );
 
     return this.prisma.$transaction(async (tx) => {
       const purchase = await tx.purchase.create({
@@ -91,7 +94,7 @@ export class PurchasesService {
           metadata: {
             itemsCount: items.length,
             supplierId: dto.supplierId ?? null,
-            totalAmount,
+            totalAmount: totalAmount.toNumber(),
           },
         },
       });
@@ -127,6 +130,18 @@ export class PurchasesService {
     const calculatedItems: CalculatedPurchaseItem[] = [];
 
     for (const item of items) {
+      const quantity = new Prisma.Decimal(item.quantity);
+      let amount: Prisma.Decimal;
+      if (item.lineTotal !== undefined && item.unitCost === undefined) {
+        amount = new Prisma.Decimal(item.lineTotal);
+      } else if (item.unitCost !== undefined && item.lineTotal === undefined) {
+        amount = quantity.mul(item.unitCost);
+      } else {
+        throw new BadRequestException(
+          'Cada item debe indicar el costo total o el costo unitario, pero no ambos',
+        );
+      }
+
       const rawMaterial = await this.prisma.rawMaterial.findUnique({
         include: {
           baseUnit: true,
@@ -156,18 +171,18 @@ export class PurchasesService {
         );
       }
 
-      const conversionRate = Number(unit.conversionRateToBase);
-      const quantityBase = item.quantity * conversionRate;
-      const unitCostBase = item.unitCost / conversionRate;
+      const quantityBase = quantity.mul(unit.conversionRateToBase);
 
       calculatedItems.push({
         rawMaterialId: item.rawMaterialId,
         quantity: item.quantity,
         unitId: item.unitId,
-        unitCost: item.unitCost,
-        subtotal: item.quantity * item.unitCost,
+        unitCost: amount
+          .div(quantity)
+          .toDecimalPlaces(4, Prisma.Decimal.ROUND_HALF_UP),
+        subtotal: amount.toDecimalPlaces(2, Prisma.Decimal.ROUND_HALF_UP),
         quantityBase,
-        unitCostBase,
+        unitCostBase: amount.div(quantityBase),
       });
     }
 
@@ -188,15 +203,11 @@ export class PurchasesService {
       throw new NotFoundException('Materia prima no encontrada');
     }
 
-    const currentStock = Number(rawMaterial.currentStock);
-    const currentAverageCost = Number(rawMaterial.averageCost);
-    const nextStock = currentStock + item.quantityBase;
-    const nextAverageCost =
-      nextStock > 0
-        ? (currentStock * currentAverageCost +
-            item.quantityBase * item.unitCostBase) /
-          nextStock
-        : item.unitCostBase;
+    const nextStock = rawMaterial.currentStock.plus(item.quantityBase);
+    const nextAverageCost = rawMaterial.currentStock
+      .mul(rawMaterial.averageCost)
+      .plus(item.quantityBase.mul(item.unitCostBase))
+      .div(nextStock);
 
     await tx.rawMaterial.update({
       data: {
